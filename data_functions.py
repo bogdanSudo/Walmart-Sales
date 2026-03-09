@@ -110,3 +110,14 @@ def get_regr_model(df):
     regr_model = smf.ols(formula=regr_ec_nou, data=df_clean).fit()
 
     print(regr_model.summary())
+
+def remove_outliers(df):
+    Q1 = df['Real_Weekly_Sales'].quantile(q = 0.25)
+    Q3 = df['Real_Weekly_Sales'].quantile(q = 0.75)
+    IQR = Q3 - Q1
+    inf_limit = Q1 - 1.5 * IQR
+    sup_limit = Q3 + 1.5 * IQR
+    df_remove_outliers = df[(df['Real_Weekly_Sales'] <= sup_limit) &
+                            (df['Real_Weekly_Sales'] >= inf_limit)
+                            ]
+    return df_remove_outliers
