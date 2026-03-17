@@ -111,6 +111,7 @@ def get_regr_model(df):
 
     print(regr_model.summary())
 
+#criteriu pentru valorile reale ale vanzarilor saptamanale
 def remove_outliers(df):
     Q1 = df['Real_Weekly_Sales'].quantile(q = 0.25)
     Q3 = df['Real_Weekly_Sales'].quantile(q = 0.75)
@@ -121,3 +122,65 @@ def remove_outliers(df):
                             (df['Real_Weekly_Sales'] >= inf_limit)
                             ]
     return df_remove_outliers
+
+def remove_lower_avg(df):
+    avg_weekly_real_value = df["Real_Weekly_Sales"].mean()
+    df = df[df['Real_Weekly_Sales'] > avg_weekly_real_value]
+    return df
+
+def perform_analysis_store(df):
+    stats_store = df.groupby('Store').agg({
+                            'Weekly_Sales': ['mean','min', 'max'],
+                            'Fuel_Price': 'mean',
+                            'Unemployment': ['mean','min', 'max']
+    })
+    stats_store.columns = ['_'.join(col).strip()
+                                     for col in stats_store.columns.values]
+    pd.options.display.float_format = '{:.2f}'.format
+    print("Statistici per magazin\n", stats_store)
+
+
+def mean_non_holiday_real_sales(df):
+    pivot_sales = df.pivot_table(
+        values = 'Real_Weekly_Sales',
+        index = 'Store',
+        columns = 'Holiday_Flag',
+        aggfunc = 'mean',
+        fill_value = 0
+    ).round(2)
+    pivot_sales.columns = ['Vanzari normale', 'Vanzari sarbatoare']
+    print('tabel pivot :sapt normala vs sarbatoare\n',
+          pivot_sales)
+
+def unemployment_sales(df):
+    df_unemployment = df.copy()
+    df_unemployment['Unemployment_Status'] = pd.cut(
+        df['Unemployment'],
+        bins = [0,5,8,12],
+        labels = ['Low', 'Medium', 'High']
+    )
+    pivot_unemployment_real_sales = df_unemployment.pivot_table(
+                                    values = 'Real_Weekly_Sales',
+                                    index = 'Unemployment_Status',
+                                    columns = 'Holiday_Flag',
+                                    aggfunc = 'mean'
+                                    )
+    pivot_unemployment_real_sales.columns = ['Vanzari normale', 'Vanzari sarbatoare']
+    print(pivot_unemployment_real_sales)
+
+def fuel_price_real_sales(df):
+    fuel = df.copy()
+    fuel['Fuel_Status'] = pd.qcut(
+        fuel['Fuel_Price'],
+        q = 2, #impart dupa mediana
+        labels = ['Ieftin', 'Scump']
+    )
+    pivot_fuel = fuel.pivot_table(
+                    values = 'Real_Weekly_Sales',
+                    index = 'Store',
+                    columns = 'Fuel_Status',
+                    aggfunc = 'mean',
+                    fill_value= 0 #pun 0 daca am NA
+    )
+    print('Vanzari per magazin in functie de situatia pretulului combustibilului\n',
+          pivot_fuel)

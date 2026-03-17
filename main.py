@@ -4,7 +4,8 @@ from pandas import Series
 import data_functions as process_data
 from data_functions import convert_to_celsius, average_weekly_sales, map_store_sales, avg_store_sales, \
     add_real_sales_column, group_yearly_sales, comp_warm_cold_weeks, avg_holiday_sales, avg_no_holiday_sales, \
-    graphic_sales, get_regr_model, remove_outliers
+    graphic_sales, get_regr_model, remove_outliers, remove_lower_avg, perform_analysis_store, \
+    mean_non_holiday_real_sales, unemployment_sales, fuel_price_real_sales
 
 PATH = "/Users/bogdan/Desktop/an3.sem2/PacheteSoftware/proiect"
 NUME_FISIER_DATE = "Walmart.csv"
@@ -72,17 +73,22 @@ def main():
 
 
     #stergea de coloane / inregistrari: incerc sa scot randuri care nu indeplinesc o anumita conditie
-    avg_weekly_real_value = df["Real_Weekly_Sales"].mean()
-    print("media este=", round(avg_weekly_real_value,2))
-
-    print("minimul este=",df['Real_Weekly_Sales'].min())
-    df = df[df['Real_Weekly_Sales'] > avg_weekly_real_value]
+    print("minimul este=", df['Real_Weekly_Sales'].min())
+    df = remove_lower_avg(df)
     print("minimul este=",df['Real_Weekly_Sales'].min())
 
     #sa elimin outlier ?
     print("max cu outlieri este=",df['Real_Weekly_Sales'].max())
     df = remove_outliers(df)
     print("max fara outlieri este=",df['Real_Weekly_Sales'].max())
+
+    perform_analysis_store(df)
+    mean_non_holiday_real_sales(df)
+
+    print('Impactul ratei somajului asupra vanzarilor')
+    unemployment_sales(df)
+
+    fuel_price_real_sales(df)
 
 if __name__ == "__main__":
     main()
