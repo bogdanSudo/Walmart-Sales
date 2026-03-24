@@ -7,7 +7,7 @@ from data_functions import convert_to_celsius, average_weekly_sales, map_store_s
     add_real_sales_column, group_yearly_sales, comp_warm_cold_weeks, avg_holiday_sales, avg_no_holiday_sales, \
     graphic_sales, get_regr_model, remove_outliers, remove_lower_avg, perform_analysis_store, \
     mean_non_holiday_real_sales, unemployment_sales, fuel_price_real_sales, hist_numeric_var, corr_analysis, \
-    monthly_sales, graph_yearly_sales, plot_top_10_stores
+    monthly_sales, graph_yearly_sales, plot_top_10_stores, plot_holiday_sales_change, plot_temp_change
 
 PATH = "/Users/bogdan/Desktop/an3.sem2/PacheteSoftware/proiect"
 NUME_FISIER_DATE = "Walmart.csv"
@@ -98,10 +98,15 @@ def main():
     fuel_price_real_sales(df)
     hist_numeric_var(df)
     corr_analysis(df)
-    monthly_sales(df)
+    monthly_sales(df) #se observa cum cresc vanzarile in noiembrie decembrie (Sarbatori)
     graph_yearly_sales(df)
     plot_top_10_stores(df)
 
+    plot_holiday_sales_change(df)
+    #se observa ca in perioada sarbatorilor vanzarile cresc semnificativ
+    #mediana are o valoare mai mare, iar potentialul maxim de vanzari difera semnificativ
+
+    plot_temp_change(df)
 
 if __name__ == "__main__":
     main()

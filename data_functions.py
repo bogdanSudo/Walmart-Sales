@@ -71,6 +71,7 @@ def monthly_sales(df):
     plt.xticks(range(1, 13))
     plt.grid(True)
     plt.show()
+    plt.close()
     return monthly_res
 
 def graph_yearly_sales(df):
@@ -83,6 +84,7 @@ def graph_yearly_sales(df):
     plt.title('Media vanzari pe ani')
     plt.grid(True)
     plt.show()
+    plt.close()
     print(yearly_result)
 
 def comp_warm_cold_weeks(df):
@@ -119,6 +121,7 @@ def graphic_sales(df):
     plt.ylabel('Valoare vanzari')
     plt.legend()
     plt.show()
+    plt.close()
 
 def get_regr_model(df):
     #regresie, dar nu tin cont de sezonalitate (seria nu are trend)
@@ -227,7 +230,7 @@ def hist_numeric_var(df):
         plt.ylabel('Frecvență')  # Etichetă pentru axa y, indicând frecvența valorilor
     plt.tight_layout()  # Ajustăm automat spațiile dintre subgrafice pentru a evita suprapunerea
     plt.show()
-
+    plt.close()
 
 #analiza corelatiilor intre variabile
 def corr_analysis(df):
@@ -237,6 +240,7 @@ def corr_analysis(df):
     plt.title("Matricea de corelație pentru variabilele numerice")
     plt.tight_layout()
     plt.show()
+    plt.close()
 
 def plot_top_10_stores(df):
     # 1. Grupăm după Store și calculăm media vânzărilor REALE (Real_Weekly_Sales)
@@ -263,4 +267,49 @@ def plot_top_10_stores(df):
         plt.text(i, val, f'{val:,.0f}', ha='center', va='bottom', fontsize=10)
 
     plt.show()
+    plt.close()
 #boxplot pt vanzari reale in functie de vacanta
+
+#sa vedem cum impacteaza vacanta vanzarile
+def plot_holiday_sales_change(df):
+    plt.figure(figsize=(8, 6))
+
+    # x = coloana cu 0 sau 1, y = coloana cu banii (Real_Weekly_Sales)
+    sns.boxplot(data=df, x='Holiday_Flag', y='Real_Weekly_Sales', palette='Set2')
+
+    # Pasul 3: Adăugăm titluri pe înțelesul tuturor
+    plt.title('Săptămâni Obișnuite vs. Sărbători')
+    plt.xlabel('Este Sărbătoare? (0 = Nu, 1 = Da)')
+    plt.ylabel('Vânzări Reale (USD)')
+
+    plt.show()
+    plt.close()
+
+def categ_temp(temp):
+    if temp < 10:
+        return 'Frig'
+    elif temp >= 10 and temp < 25:
+        return 'Moderat'
+    else:
+        return 'Cald'
+
+def plot_temp_change(df):
+    #impart vremea in doua categorii: frig si cald
+
+    df['Vreme'] = df['Temperature_C'].apply(categ_temp)
+
+
+    # Pasul 2: Pregătim graficul
+    plt.figure(figsize=(8, 6))
+
+    # Pasul 3: Desenăm boxplot-ul folosind noua coloană creată la pasul 1
+    culori_temp = ['lightblue', 'yellow', 'red']
+    sns.boxplot(data=df, x='Vreme', y='Real_Weekly_Sales', palette=culori_temp, order = ['Frig', 'Moderat', 'Cald'])
+
+    # Pasul 4: Etichetare
+    plt.title('Vânzări in functie de vreme')
+    plt.xlabel('TIP VREME')
+    plt.ylabel('Vânzări Reale (USD)')
+
+    plt.show()
+    plt.close()
