@@ -1,11 +1,13 @@
 import kagglehub
 import pandas as pd
+import seaborn as sns
 from pandas import Series
 import data_functions as process_data
 from data_functions import convert_to_celsius, average_weekly_sales, map_store_sales, avg_store_sales, \
     add_real_sales_column, group_yearly_sales, comp_warm_cold_weeks, avg_holiday_sales, avg_no_holiday_sales, \
     graphic_sales, get_regr_model, remove_outliers, remove_lower_avg, perform_analysis_store, \
-    mean_non_holiday_real_sales, unemployment_sales, fuel_price_real_sales
+    mean_non_holiday_real_sales, unemployment_sales, fuel_price_real_sales, hist_numeric_var, corr_analysis, \
+    monthly_sales, graph_yearly_sales, plot_top_10_stores
 
 PATH = "/Users/bogdan/Desktop/an3.sem2/PacheteSoftware/proiect"
 NUME_FISIER_DATE = "Walmart.csv"
@@ -18,7 +20,11 @@ NUME_FISIER_DATE = "Walmart.csv"
 #a eventualelor posibilităţi de extindere a acesteia.
 def main():
     df = pd.read_csv(NUME_FISIER_DATE)
+    pd.set_option('display.max_columns', None)
+
+
     df = df.dropna(subset = 'Weekly_Sales')
+
     df['Temperature_C'] = df['Temperature'].apply(convert_to_celsius)
 
     list_weekly_sales = df["Weekly_Sales"].tolist()
@@ -88,7 +94,14 @@ def main():
     print('Impactul ratei somajului asupra vanzarilor')
     unemployment_sales(df)
 
+    df.drop(['Weekly_Sales'], axis=1, inplace=True)
     fuel_price_real_sales(df)
+    hist_numeric_var(df)
+    corr_analysis(df)
+    monthly_sales(df)
+    graph_yearly_sales(df)
+    plot_top_10_stores(df)
+
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,5 @@
+import math
+import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
@@ -48,7 +50,8 @@ def add_real_sales_column(df):
 def group_yearly_sales(df):
     df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
     df['Year'] = df['Date'].dt.year
-
+    df['Month'] = df['Date'].dt.month
+    df['Week'] = df['Date'].dt.isocalendar().week  # Numărul săptămânii în an (1-52)
     # media vanzarilor reale saptamanel
     yearly_result = df.groupby('Year')[['Real_Weekly_Sales', 'Weekly_Sales']].agg(['mean']).reset_index()
 
@@ -57,6 +60,30 @@ def group_yearly_sales(df):
     yearly_result['Delta'] = ((yearly_result['Nominal_Weekly_Sales'] - yearly_result['Real_avg_weekly_sales'])
                               / yearly_result['Nominal_Weekly_Sales']) * 100
     return yearly_result
+
+def monthly_sales(df):
+    monthly_res = df.groupby('Month')[['Real_Weekly_Sales']].agg(['mean']).reset_index()
+    monthly_res.columns = ['Month', 'Real_avg_weekly_sales']
+
+    plt.figure(figsize=(10, 5))
+    sns.lineplot(data=monthly_res, x='Month', y='Real_avg_weekly_sales', marker='o', color='red')
+    plt.title('Media vanzari pe luni')
+    plt.xticks(range(1, 13))
+    plt.grid(True)
+    plt.show()
+    return monthly_res
+
+def graph_yearly_sales(df):
+    yearly_result = df.groupby('Year')[['Real_Weekly_Sales']].agg(['mean']).reset_index()
+
+    yearly_result.columns = ['Year', 'Year_sales']
+    plt.figure(figsize=(10, 5))
+    sns.lineplot(data=yearly_result, x='Year', y='Year_sales', marker='o', color='red')
+    plt.xticks(yearly_result['Year'].unique())
+    plt.title('Media vanzari pe ani')
+    plt.grid(True)
+    plt.show()
+    print(yearly_result)
 
 def comp_warm_cold_weeks(df):
     warm_weeks = df.loc[(df.Temperature >= WARM_TEMPERATURE_C), 'Real_Weekly_Sales']
@@ -184,3 +211,56 @@ def fuel_price_real_sales(df):
     )
     print('Vanzari per magazin in functie de situatia pretulului combustibilului\n',
           pivot_fuel)
+
+
+def hist_numeric_var(df):
+    numerical_cols = df.select_dtypes(include = 'number').columns
+    numerical_cols
+    n_cols = 3
+    n_rows = math.ceil(len(numerical_cols)/n_cols)
+    plt.figure(figsize = (6*n_cols, 4*n_rows))
+    for i, col in enumerate(numerical_cols):
+        plt.subplot(n_rows, n_cols, i + 1)  # Creăm un subplot în grila de n_rows x n_cols; i+1 pentru indexarea subgraficelor începând de la 1
+        plt.hist(df[col].dropna(), bins=30, edgecolor='black', color='skyblue')  # Construim histograma pentru coloana curentă, eliminând valorile lipsă
+        plt.title(f'Distribuția: {col}')  # Setăm titlul graficului cu numele coloanei
+        plt.xlabel(col)  # Etichetă pentru axa x, indicând numele variabilei
+        plt.ylabel('Frecvență')  # Etichetă pentru axa y, indicând frecvența valorilor
+    plt.tight_layout()  # Ajustăm automat spațiile dintre subgrafice pentru a evita suprapunerea
+    plt.show()
+
+
+#analiza corelatiilor intre variabile
+def corr_analysis(df):
+    corr_matrix = df.corr()
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+    plt.title("Matricea de corelație pentru variabilele numerice")
+    plt.tight_layout()
+    plt.show()
+
+def plot_top_10_stores(df):
+    # 1. Grupăm după Store și calculăm media vânzărilor REALE (Real_Weekly_Sales)
+    store_sales = df.groupby('Store')['Real_Weekly_Sales'].mean()
+
+    # 2. Selectăm cele mai mari 10 valori
+    top_10 = store_sales.sort_values(ascending=False).head(10)
+
+    # 3. Creăm figura
+    plt.figure(figsize=(12, 6))
+
+    # 4. Construim barplot-ul folosind plt.bar (varianta basic)
+    # Convertim indexul (Codurile Store) în string ca să nu le pună pe o axă numerică ciudată
+    plt.bar(top_10.index.astype(str), top_10.values, color='green', edgecolor='black')
+
+    # 5. Personalizare (Titlu, Etichete)
+    plt.title("Top 10 magazine dupa vanzarile medii reale", fontsize=14)
+    plt.xlabel("Store ID", fontsize=12)
+    plt.ylabel("Vânzări Medii Reale (USD)", fontsize=12)
+    plt.grid(axis='y', linestyle='--', alpha=0.7) # Adăugăm linii de ghidaj pe orizontală
+
+    # 6. Adăugăm valorile deasupra barelor (opțional, pentru claritate)
+    for i, val in enumerate(top_10.values):
+        plt.text(i, val, f'{val:,.0f}', ha='center', va='bottom', fontsize=10)
+
+    plt.show()
+#boxplot pt vanzari reale in functie de vacanta
